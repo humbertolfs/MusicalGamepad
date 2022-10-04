@@ -1,5 +1,4 @@
 import vgamepad as vg
-import subprocess
 import psutil
 import time
 
@@ -22,13 +21,11 @@ gamepad.update()
 
 gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
 gamepad.update()
-time.sleep(0.5)
-
-subprocess.call(r"C:\Program Files (x86)\Steam\Steam.exe -applaunch 413150")
 
 time.sleep(30.0)
 
-while ("Stardew Valley.exe" in (p.name() for p in psutil.process_iter()) and audio_analyzer.running):
+#"Stardew Valley.exe" in (p.name() for p in psutil.process_iter()) and 
+while (audio_analyzer.running):
 
     freq = frequency_queue.get()
     if freq is not None:
@@ -68,11 +65,11 @@ while ("Stardew Valley.exe" in (p.name() for p in psutil.process_iter()) and aud
             print('B')
 
     # press buttons and things
-    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
-    gamepad.update()
+    #gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
+    #gamepad.update()
 
     # release buttons and things
-    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
-    gamepad.update()
+    #gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
+    #gamepad.update()
 
     time.sleep(1.0)
