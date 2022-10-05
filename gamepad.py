@@ -1,5 +1,4 @@
 import vgamepad as vg
-import psutil
 import time
 
 from tuner_audio.audio_analyzer import AudioAnalyzer
@@ -24,7 +23,6 @@ gamepad.update()
 
 time.sleep(30.0)
 
-#"Stardew Valley.exe" in (p.name() for p in psutil.process_iter()) and 
 while (audio_analyzer.running):
 
     freq = frequency_queue.get()
