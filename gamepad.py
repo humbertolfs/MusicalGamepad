@@ -6,7 +6,7 @@ from tuner_audio.threading_helper import ProtectedList
 
 frequency_queue = ProtectedList()
 
-audio_analyzer = AudioAnalyzer(frequency_queue)
+audio_analyzer = AudioAnalyzer(frequency_queue, minVol = 800)
 audio_analyzer.start()
 
 nearest_note_number_buffered = 69
@@ -21,11 +21,13 @@ gamepad.update()
 gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
 gamepad.update()
 
-time.sleep(30.0)
-
+while (not audio_analyzer.running or frequency_queue.get() is None):
+    time.sleep(0.5)
+print("Audio Analizer Started")
+note = None
 while (audio_analyzer.running):
 
-    freq = frequency_queue.get()
+    freq = frequency_queue.get()    
     if freq is not None:
 
         # convert frequency to note number
@@ -35,7 +37,8 @@ while (audio_analyzer.running):
         nearest_note_number = round(number)
 
         note = audio_analyzer.number_to_note_name(nearest_note_number)
-
+    else:
+        note = None
     match note:
         case 'C':
             print('C')
@@ -61,6 +64,8 @@ while (audio_analyzer.running):
             print('A#')
         case 'B':
             print('B')
+        case other:
+            print('No note')
 
     # press buttons and things
     #gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
@@ -70,4 +75,4 @@ while (audio_analyzer.running):
     #gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE)
     #gamepad.update()
 
-    time.sleep(1.0)
+    time.sleep(0.016)

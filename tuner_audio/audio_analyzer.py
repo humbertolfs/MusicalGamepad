@@ -32,13 +32,14 @@ class AudioAnalyzer(Thread):
 
     NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-    def __init__(self, queue, *args, **kwargs):
+    def __init__(self, queue, minVol = 0, *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
 
         self.queue = queue  # queue should be instance of ProtectedList (threading_helper.ProtectedList)
         self.buffer = np.zeros(self.CHUNK_SIZE * self.BUFFER_TIMES)
         self.hanning_window = np.hanning(len(self.buffer))
         self.running = False
+        self.minVol = minVol
 
         try:
             self.audio_object = PyAudio()
@@ -122,7 +123,10 @@ class AudioAnalyzer(Thread):
                         break
 
                 # put the frequency of the loudest tone into the queue
-                self.queue.put(round(frequencies[np.argmax(magnitude_data)], 2))
+                if np.argmax(magnitude_data) >= self.minVol:
+                    self.queue.put(round(frequencies[np.argmax(magnitude_data)], 2))
+                else:
+                    self.queue.put(None)
 
             except Exception as e:
                 sys.stderr.write('Error: Line {} {} {}\n'.format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
