@@ -42,7 +42,6 @@ while (audio_analyzer.running):
 
     if frequency_queue.elements[len(frequency_queue.elements) - 1] == None:
         note = None
-    print(frequency_queue.elements)
     match note:
         case 'C':
             print('C')
