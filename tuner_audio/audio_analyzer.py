@@ -32,14 +32,14 @@ class AudioAnalyzer(Thread):
 
     NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-    def __init__(self, queue, minVol = 0, *args, **kwargs):
+    def __init__(self, queue, minimum_volume = 0, *args, **kwargs):
         Thread.__init__(self, *args, **kwargs)
 
         self.queue = queue  # queue should be instance of ProtectedList (threading_helper.ProtectedList)
         self.buffer = np.zeros(self.CHUNK_SIZE * self.BUFFER_TIMES)
         self.hanning_window = np.hanning(len(self.buffer))
         self.running = False
-        self.minVol = minVol
+        self.minimum_volume = minimum_volume
 
         try:
             self.audio_object = PyAudio()
@@ -83,6 +83,9 @@ class AudioAnalyzer(Thread):
         note_name = AudioAnalyzer.number_to_note_name(number)
         return note_name
 
+    def set_minimum_volume(self, minimum_volume):
+        self.minimum_volume = minimum_volume
+
     def run(self):
         """ Main function where the microphone buffer gets read and
             the fourier transformation gets applied """
@@ -123,9 +126,9 @@ class AudioAnalyzer(Thread):
                         break
 
                 # put the frequency of the loudest tone into the queue
-                if np.argmax(magnitude_data) >= self.minVol:
+                if np.argmax(magnitude_data) >= self.minimum_volume:
                     self.queue.put(round(frequencies[np.argmax(magnitude_data)], 2))
-                else:
+                else: #or put none if the volume is too low compared to the minimum
                     self.queue.put(None)
 
             except Exception as e:
