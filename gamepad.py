@@ -8,7 +8,7 @@ from tuner_audio.threading_helper import ProtectedList
 thisdict ={}
 frequency_queue = ProtectedList()
 
-audio_analyzer = AudioAnalyzer(frequency_queue, minimum_volume = 800) #Pode-se mudar o volume mínimo usando set_minimum_volume
+audio_analyzer = AudioAnalyzer(frequency_queue, minimum_volume = 1000) #Pode-se mudar o volume mínimo usando set_minimum_volume
 audio_analyzer.start()
 
 nearest_note_number_buffered = 69
