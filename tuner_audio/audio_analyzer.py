@@ -126,6 +126,7 @@ class AudioAnalyzer(Thread):
                         break
 
                 # put the frequency of the loudest tone into the queue
+                #print(np.argmax(magnitude_data))
                 if np.argmax(magnitude_data) >= self.minimum_volume:
                     self.queue.put(round(frequencies[np.argmax(magnitude_data)], 2))
                 else: #or put none if the volume is too low compared to the minimum
