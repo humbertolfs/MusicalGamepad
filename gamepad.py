@@ -23,18 +23,36 @@ a4_frequency = 440
 gamepad = vg.VX360Gamepad()
 
 # pressing a button to wake the device up
-a=vg.XUSB_BUTTON.XUSB_GAMEPAD_A
-b=vg.XUSB_BUTTON.XUSB_GAMEPAD_GUIDE
-gamepad.press_button(button = a)
+gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
 gamepad.update()
 
-gamepad.release_button(button = a)
+gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
 gamepad.update()
 time.sleep(0.5)
 
 
 print("Audio Analizer Started")
 note = None
+
+def buttonPress(note):
+    if thisdict[note] == "Lt":
+        gamepad.left_trigger(value=255)
+    elif thisdict[note] == "Rt":
+        gamepad.right_trigger(value=255)
+    else:
+        gamepad.press_button(thisdict[note])
+    gamepad.update()
+
+
+def buttonRelease(note):
+    if thisdict[note] == "Lt":
+        gamepad.left_trigger(value=0)
+    elif thisdict[note] == "Rt":
+        gamepad.right_trigger(value=0)
+    else:
+        gamepad.release_button(thisdict[note])
+    gamepad.update()
+
 def vgButton(button):
     match button:
         case "cima":
@@ -56,16 +74,11 @@ def vgButton(button):
         case "Lb":
             return vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER
         case "Lt":#a
-            return vg.XUSB_BUTTON.XUSB_GAMEPAD_A
+            return "Lt"
         case "Rb":
             return vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER
         case "Rt":#a
-            return vg.XUSB_BUTTON.XUSB_GAMEPAD_A
-
-def buttonMap(button,nota):
-    global noteC, noteCSharp, noteD, noteDSharp
-    global noteF, noteFSharp, noteG, noteGSharp
-    global noteA, noteAsharp, noteB, noteE
+            return "Rt"
     
 def interfaceButtonMap():
     agreeMap="s"
@@ -84,8 +97,6 @@ def interfaceButtonMap():
                 print("Esta eh a nota que voce quer, ", nota ,"para o botao",button, " ? (s/n)")
                 agree = input()
             thisdict[nota] = vgButton(button)
-
-
 
 def getNote():
     note = None
@@ -163,10 +174,9 @@ def clickButton():
             #    print('No note')
         
         if note == None and lastNote != None: #Atualmente, se você tocar mais de uma nota sem deixar silêncio entre elas, você pode apertar mais de um botão.
-            gamepad.release_button(thisdict[lastNote])
+            buttonRelease(lastNote)
             for i in notas:
-                gamepad.release_button(thisdict[i])
-            gamepad.update()
+                buttonRelease(i)
         elif note != None:
             if len(lastNotes.elements) >= NOTE_LEEWAY:
                 lastValid = True
@@ -175,8 +185,7 @@ def clickButton():
                         lastValid = False
                 if lastValid == True:
                     lastNote = note
-                    gamepad.press_button(thisdict[note])
-                    gamepad.update()
+                    buttonPress(note)
         
         time.sleep(0.033) #30FPS
 
