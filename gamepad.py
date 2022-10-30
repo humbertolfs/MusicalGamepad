@@ -1,4 +1,5 @@
 from doctest import testfile
+from glob import glob
 import os
 import configparser
 from tabnanny import check
@@ -333,6 +334,7 @@ def limpaGui(agreeMap):
         endBtn.grid_forget()
     window.update()
     lbl.config(text = "           Running gamepad...           ")
+    lbl.grid(column=0, row=1, columnspan=2)
                 
 def interfaceMultiOptionTk(agreeMap):
     global lblArray
@@ -390,13 +392,13 @@ def setOptions(keyReceive):
         minimumVolumeVariable.set("1")
     if int(noteLeewayVariable.get()) > 20:
         minimumVolumeVariable.set("20")
-    
-    frequency_queue.buffer_size = int(bufferSizeVariable.get())
-    frequency_queue.elements = lastNotes.elements[:int(bufferSizeVariable.get())]
-    audio_analyzer.minimum_volume = int(minimumVolumeVariable.get())
+
     noteLeeway = int(noteLeewayVariable.get())
     lastNotes.buffer_size = noteLeeway
     lastNotes.elements = lastNotes.elements[:noteLeeway]
+    frequency_queue = ProtectedList(buffer_size=int(bufferSizeVariable.get()))
+    audio_analyzer = AudioAnalyzer(frequency_queue, minimum_volume=int(minimumVolumeVariable.get()))
+    audio_analyzer.start()
 
     checkConfig()
     with open('gamepadconfig.ini', 'w') as configfile:
@@ -405,17 +407,24 @@ def setOptions(keyReceive):
         config['OPTIONS']['noteleeway'] = noteLeewayVariable.get()
         config.write(configfile)
 
-    print("Values updated!")
+    print("Valores atualizados!")
 
 def mainGui():
     global btnEdit
     global entryBuffer
     global entryVolume
     global entryLeeway
-    btnEdit.grid(column = 0, row = 2)
-    entryBuffer.grid(column = 0, row = 3)
-    entryVolume.grid(column = 0, row = 4)
-    entryLeeway.grid(column = 0, row = 5)
+    btnEdit.grid(column = 0, row = 2, columnspan = 2)
+    nameBuffer = Label(window, text="Buffer")
+    nameBuffer.grid(column = 0, row = 3)
+    entryBuffer.grid(column = 1, row = 3)
+    nameVolume = Label(window, text="Volume")
+    nameVolume.grid(column=0, row=4)
+    entryVolume.grid(column = 1, row = 4)
+    nameLeeway = Label(window, text="Leeway")
+    nameLeeway.grid(column=0, row=5)
+    entryLeeway.grid(column = 1, row = 5)
+    
 
 def editClick():
     global maingui
@@ -424,7 +433,7 @@ def editClick():
     global entryVolume
     global entryLeeway
     maingui = False
-    lbl.configure(text = "Mapeando Botoes: ")
+    lbl.configure(text = "Mapeando Botões: ")
     btnEdit.grid_forget()
     entryBuffer.grid_forget()
     entryVolume.grid_forget()
@@ -434,7 +443,7 @@ def editClick():
     
 
 def yesClick():
-    lbl.configure(text = "Mapeando Botoes: ")
+    lbl.configure(text = "Mapeando Botões: ")
     btnYes.destroy()
     btnNo.destroy()
     t = Thread(target = interfaceMultiOptionTk, args = ("s"), daemon = True)
@@ -476,7 +485,7 @@ def guiInterface():
 
     #window.geometry(str(column)+"x"+str(row))
 
-    lbl = Label(window, text = "Você quer mapear os botoes?")
+    lbl = Label(window, text = "Você quer mapear os botões?")
     lbl.grid(column = 0, row = 1)
 
     btnYes = Button(window, text = "Sim", command = yesClick)
@@ -485,9 +494,9 @@ def guiInterface():
     btnNo = Button(window, text = "Não", command = noClick)
     btnNo.grid(column = 1, row = 2)
 
-    endBtn = Button(window, text = "Fim de Edição", command = fimDaEdicao)
+    endBtn = Button(window, text = "Fim da Edição", command = fimDaEdicao)
 
-    btnEdit = Button(window, text = "Editar Botões", command = editClick)
+    btnEdit = Button(window, text = "Mapear Botões", command = editClick)
     entryBuffer = Entry(window, textvariable = bufferSizeVariable)
     entryBuffer.bind('<Return>', setOptions)
     entryVolume = Entry(window, textvariable = minimumVolumeVariable)
