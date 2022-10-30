@@ -4,7 +4,6 @@ import configparser
 from tabnanny import check
 import vgamepad as vg
 import time
-import PySimpleGUI as sg
 from threading import Thread
 from tuner_audio.audio_analyzer import AudioAnalyzer
 from tuner_audio.threading_helper import ProtectedList
@@ -93,6 +92,7 @@ minimumVolumeVariable = StringVar(window, config['OPTIONS']['minimumvolume'])
 noteLeewayVariable = StringVar(window, config['OPTIONS']['noteleeway'])
 
 noteLeeway = int(noteLeewayVariable.get())
+lastNotes = ProtectedList(buffer_size = noteLeeway)
 
 for i in range(12):
     thisdict[notas[i]] = vgButton(botoes[i])
@@ -166,10 +166,10 @@ def getNote():
         
 def clickButton():
     global noteLeeway
+    global lastNotes
     global clickButtonThreadRunningCheck
     clickButtonThreadRunningCheck = True
     lastNote = None
-    lastNotes = ProtectedList(buffer_size = noteLeeway)
     print("Audio Analizer Awaiting first value...")
     while (not audio_analyzer.running or frequency_queue.get() is None) and not editingThreadRunningCheck: #Só irá iniciar quando o volume mínimo for atingido
         time.sleep(0.5)
@@ -369,11 +369,12 @@ def interfaceMultiOptionTk(agreeMap):
         t = Thread(target = clickButton, args = ())
         t.start()
 
-def setOptions(a):
+def setOptions(keyReceive):
     global bufferSizeVariable
     global minimumVolumeVariable
     global noteLeewayVariable
     global noteLeeway
+    global lastNotes
 
     if int(bufferSizeVariable.get()) < 2:
         bufferSizeVariable.set("2")
@@ -391,8 +392,11 @@ def setOptions(a):
         minimumVolumeVariable.set("20")
     
     frequency_queue.buffer_size = int(bufferSizeVariable.get())
+    frequency_queue.elements = lastNotes.elements[:int(bufferSizeVariable.get())]
     audio_analyzer.minimum_volume = int(minimumVolumeVariable.get())
     noteLeeway = int(noteLeewayVariable.get())
+    lastNotes.buffer_size = noteLeeway
+    lastNotes.elements = lastNotes.elements[:noteLeeway]
 
     checkConfig()
     with open('gamepadconfig.ini', 'w') as configfile:

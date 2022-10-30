@@ -21,6 +21,7 @@ class ProtectedList(object):
             self.elements.pop(0)
 
         self.lock.release()
+    
 
     def get(self):
         self.lock.acquire()
