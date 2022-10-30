@@ -1,3 +1,4 @@
+from doctest import testfile
 import vgamepad as vg
 import time
 import PySimpleGUI as sg
@@ -11,6 +12,7 @@ MINIMUM_VOLUME = 800
 NOTE_LEEWAY = 6
 
 thisdict = {}
+dictNotaBut ={}
 botao = ["cima","baixo","esquerda","direita","A","B","X","Y","Lb","Lt","Rb","Rt"]
 notas = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
 frequency_queue = ProtectedList(buffer_size = BUFFER_SIZE)
@@ -174,76 +176,137 @@ def clickButton():
         
         time.sleep(0.033) #30FPS
 
- 
-def interfaceButtonMap():
-    agreeMap="s"
+def yesMapButton():
+    global fineMapping
+    lbl.configure(text="Mapeando Botoes... ")
+    btnYesMap.destroy()
+    btnNoMap.destroy()
+    fineMapping = "s"
+def noMapButton():
+    lbl.configure(text="Mapeando Botoes... ")
+    global fineMapping
+    btnYesMap.destroy()
+    btnNoMap.destroy()
+    fineMapping = "n"    
+
+def editarBotao(threadName, id):
+    global btnNoMap
+    global btnYesMap
+    global fineMapping
+    global stillplayingInstrument
+    global thisdict
+    global dictNotaBut
+    button = botao[id]
+    fineMapping = "?"
+    while(fineMapping=="?"):
+        labelMiddle.configure(text="Defina uma nota para o botao: "+str(button))
+        time.sleep(1)
+        nota = getNote()
+        labelMiddle.configure(text="Esta eh a nota que voce quer,  "+ str(nota) +" para o Botao "+ str(button)+  " ?")   
+        btnYesMap = Button(top, text="Sim", command=yesMapButton)
+        btnYesMap.grid(column=0, row=3)
+        btnNoMap = Button(top, text="Nao", command=noMapButton)
+        btnNoMap.grid(column=1, row=3)
+
+        while(fineMapping=="?"):
+            #SE NAO COLOCAR TIMER, COME MUITO PROCESSAMENTO
+            #O IDEAL SERIA USAR UM CANAL DE GOLANG
+            time.sleep(1)
+        if (fineMapping == "n"):
+            fineMapping = "?"
+        
+        #TROCA OS BOTOES (SE CIMA EH A~ E BAIXO EH B~ E EU QUERO Q CIMA SEJA B=>)
+        #ENTAO EU FACO CIMA SER B~ E MUDO BAIXO PRA A~
+        thisdict[list(dictNotaBut.keys())[list(dictNotaBut.values()).index(button)]] = thisdict[nota]
+        thisdict[nota] = vgButton(button)
+        #print("a",thisdict)
+        dictNotaBut[list(dictNotaBut.keys())[list(dictNotaBut.values()).index(button)]] = dictNotaBut[nota]
+        dictNotaBut[nota]=button
+        #print("b",dictNotaBut)
+    stillplayingInstrument = "s"
+    top.destroy()
+
+
+def editarBotaoThread(id):
+    global top
+    global labelTop
+    global labelMiddle
     
-    print("Voce quer mapear os botoes?(s/n)")
-    agreeMap = input()
-    if(agreeMap == "n"):
-        for i in range(12):
-            thisdict[notas[i]] = vgButton(botao[i])
-    else:
-        for button in botao:
-            agree="n"
-            while(agree!="s"):
-                print("Defina uma nota para o botao: ", button)
-                nota = getNote()
-                print("Esta eh a nota que voce quer, ", nota ,"para o botao",button, " ? (s/n)")
-                agree = input()
-            thisdict[nota] = vgButton(button)
-
-
-
-
-def interfaceButtonMapTkinter(agreeMap):
-    def yesNoteClick():
-        global agree
-        lbl.configure(text="Mapeando Botoes... ")
-        btnYesCadastro.destroy()
-        btnNoCadastro.destroy()
-        agree = "s"
+    #destroy all buttons
+    for i in lblArray:
+        i.destroy()
     
-    def noNoteClick():
-        global agree
-        lbl.configure(text="Mapeando Botoes... ")
-        btnYesCadastro.destroy()
-        btnNoCadastro.destroy()
-        agree = "n"
-    
-    global agree
-    global lb1
+    for i in lblButtonArray:
+        i.destroy()
+    endBtn.destroy()
 
-    print("Voce quer mapear os botoes?(s/n)")
-    #agreeMap = input()
-    for i in range(12):
-            thisdict[notas[i]] = vgButton(botao[i])
-    if(agreeMap != "n"):
-        for button in botao:
-            agree = "?"
-            while(agree=="?"):
-                #print("Defina uma nota para o botao: ", button)
-                lbl1.configure(text="Defina uma nota para o botao: "+str(button))
-                time.sleep(1)
-                nota = getNote()
-                #print("Esta eh a nota que voce quer, ", nota ,"para o botao",button, " ? (s/n)")
-                lbl1.configure(text="Esta eh a nota que voce quer,  "+ str(nota) +" para o Botao "+ str(button)+  " ?")
-                btnYesCadastro = Button(window, text="Sim", command=yesNoteClick)
-                btnYesCadastro.grid(column=0, row=3)
-                btnNoCadastro = Button(window, text="Nao", command=noNoteClick)
-                btnNoCadastro.grid(column=1, row=3)
-                #print (nota)
-                #print(agree)
-                while(agree=="?"):
-                    pass
-                if (agree == "n"):
-                    agree = "?"
+    top= Toplevel(window)
+    top.title("Editing a single button")
+    labelTop = Label(top, text= "editing...!")
+    labelTop.grid(column=0, row=1)
+    labelMiddle = Label(top, text= " ")
+    labelMiddle.grid(column=0, row=2)
+
+    t = Thread(target=editarBotao,args =("editarBotao",id))
+    t.start()
+       
+#atual
+def fimDaEdicao():
+    global stillplayingInstrument
+    global stillEditing
+    
+    stillEditing = "n"
+    stillplayingInstrument ="s"
+def limpaGui():
+    for i in lblArray:
+        i.destroy()
+    
+    for i in lblButtonArray:
+        i.destroy()
+    endBtn.destroy()
+    a= Label(window, text="Running gamepad") 
+    a.grid(column=0, row=1)
                 
-                #print("Esta eh a nota que voce quer, ", nota ,"para o botao",button, " ? (s/n)")
-                #agree = input()
-            thisdict[nota] = vgButton(button)
-    #window.destroy()
-    clickButton()
+def interfaceMultiOptionTk(agreeMap):
+    global lblArray
+    global lblButtonArray
+    global endBtn
+    global stillplayingInstrument
+    global stillEditing
+
+    stillEditing ="s"
+    lblArray = []
+    lblButtonArray =[]
+    for i in range(12):
+        thisdict[notas[i]] = vgButton(botao[i])
+        dictNotaBut[notas[i]]=botao[i]
+    if(agreeMap=="s"):
+        #loop acontece enquanto voce esta editando notas
+        while(stillEditing=="s"):
+            lblArray = []
+            lblButtonArray =[]
+            stillplayingInstrument = "n"
+            for i in range(12):
+                #accessing key dictionary by value (inverse dict acess)
+                lblArray.append(Label(window, text="botao: "+ str(botao[i]) + " = nota: "+list(dictNotaBut.keys())[list(dictNotaBut.values()).index(botao[i])])) 
+
+                lblArray[i].grid(column=0, row=i+2)
+                lblButtonArray.append(Button(window, text="Editar", command = lambda c=i : editarBotaoThread(c)))
+                lblButtonArray[i].grid(column=1, row=i+2)
+                endBtn = Button(window, text="Fim de edicao", command =fimDaEdicao)
+                endBtn.grid(column=1, row=14)
+            
+            while(stillplayingInstrument=="n"):
+                #SE NAO COLOCAR TIMER, COME MUITO PROCESSAMENTO
+                #O IDEAL SERIA USAR UM CANAL DE GOLANG
+                time.sleep(1)
+    #limpaGui()
+    t = Thread(target =clickButton,args =())
+    t.start()
+
+    window.destroy()
+    #clickButton()
+
 
 def yesClick():
     global lbl1
@@ -253,8 +316,8 @@ def yesClick():
     lbl1 = Label(window, text="starting")
     lbl1.grid(column=0, row=2)
     #window.destroy()
-    #t = Thread(target =interfaceMultiOptionTk,args =("s"))
-    t = Thread(target =interfaceButtonMapTkinter,args =("s"))
+    t = Thread(target =interfaceMultiOptionTk,args =("s"))
+    #t = Thread(target =interfaceButtonMapTkinter,args =("s"))
     t.start()
 
 def noClick():
