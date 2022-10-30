@@ -149,8 +149,11 @@ if __name__ == "__main__":
     a = AudioAnalyzer(q)
     a.start()
 
-    while True:
-        q_data = q.get()
-        if q_data is not None:
-            print("loudest frequency:", q_data, "nearest note:", a.frequency_to_note_name(q_data, 440))
-            time.sleep(0.02)
+    try:
+        while True:
+            q_data = q.get()
+            if q_data is not None:
+                print("loudest frequency:", q_data, "nearest note:", a.frequency_to_note_name(q_data, 440))
+                time.sleep(0.02)
+    except KeyboardInterrupt:
+        sys.exit(0)
