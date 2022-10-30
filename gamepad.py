@@ -1,8 +1,8 @@
-from doctest import testfile
-from glob import glob
+#from doctest import testfile
+#from glob import glob
+#from tabnanny import check
 import os
 import configparser
-from tabnanny import check
 import vgamepad as vg
 import time
 from threading import Thread
@@ -40,6 +40,8 @@ def checkConfig():
             }
             config.write(configfile)
     config.read('gamepadconfig.ini')
+
+checkConfig()
 
 def rewriteConfigBotoes(button1, button2, note1, note2):
     checkConfig()
@@ -117,8 +119,37 @@ gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
 gamepad.update()
 time.sleep(0.5)
 
-print("Audio Analizer Started")
+#print("Audio Analizer Started")
 note = None
+
+def printNote(note):
+    match note:
+        case 'C':
+            print('C')
+        case 'C#':
+            print('C#')
+        case 'D':
+            print('D')
+        case 'D#':
+            print('D#')
+        case 'E':
+            print('E')
+        case 'F':
+            print('F')
+        case 'F#':
+            print('F#')
+        case 'G':
+            print('G')
+        case 'G#':
+            print('G#')
+        case 'A':
+            print('A')
+        case 'A#':
+            print('A#')
+        case 'B':
+            print('B')
+        #case other:
+        #    print('No note')
 
 def buttonPress(note):
     if thisdict[note] == "Lt":
@@ -171,43 +202,17 @@ def clickButton():
     global clickButtonThreadRunningCheck
     clickButtonThreadRunningCheck = True
     lastNote = None
-    print("Audio Analizer Awaiting first value...")
+    #print("Audio Analizer Awaiting first value...")
     while (not audio_analyzer.running or frequency_queue.get() is None) and not editingThreadRunningCheck: #Só irá iniciar quando o volume mínimo for atingido
         time.sleep(0.5)
-    print("Audio Analizer Running")
+    #print("Audio Analizer Running")
 
     while (audio_analyzer.running):
         if not editingThreadRunningCheck:
             note = getFreq()
 
             lastNotes.put(note)
-            match note:
-                case 'C':
-                    print('C')
-                case 'C#':
-                    print('C#')
-                case 'D':
-                    print('D')
-                case 'D#':
-                    print('D#')
-                case 'E':
-                    print('E')
-                case 'F':
-                    print('F')
-                case 'F#':
-                    print('F#')
-                case 'G':
-                    print('G')
-                case 'G#':
-                    print('G#')
-                case 'A':
-                    print('A')
-                case 'A#':
-                    print('A#')
-                case 'B':
-                    print('B')
-                #case other:
-                #    print('No note')
+            #printNote(note)
             
             if note == None and lastNote != None: #Atualmente, se você tocar mais de uma nota sem deixar silêncio entre elas, você pode apertar mais de um botão.
                 buttonRelease(lastNote)
@@ -409,7 +414,7 @@ def setOptions(keyReceive):
         config['OPTIONS']['noteleeway'] = noteLeewayVariable.get()
         config.write(configfile)
 
-    print("Valores atualizados!")
+    #print("Valores atualizados!")
 
 def mainGui():
     global btnMap
