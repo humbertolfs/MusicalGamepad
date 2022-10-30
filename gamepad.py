@@ -334,7 +334,6 @@ def limpaGui(agreeMap):
         endBtn.grid_forget()
     window.update()
     lbl.config(text = "           Running gamepad...           ")
-    lbl.grid(column=0, row=1, columnspan=2)
                 
 def interfaceMultiOptionTk(agreeMap):
     global lblArray
@@ -396,9 +395,12 @@ def setOptions(keyReceive):
     noteLeeway = int(noteLeewayVariable.get())
     lastNotes.buffer_size = noteLeeway
     lastNotes.elements = lastNotes.elements[:noteLeeway]
-    frequency_queue = ProtectedList(buffer_size=int(bufferSizeVariable.get()))
+    '''frequency_queue = ProtectedList(buffer_size=int(bufferSizeVariable.get()))
     audio_analyzer = AudioAnalyzer(frequency_queue, minimum_volume=int(minimumVolumeVariable.get()))
-    audio_analyzer.start()
+    audio_analyzer.start()'''
+    frequency_queue.buffer_size = int(bufferSizeVariable.get())
+    frequency_queue.elements = frequency_queue.elements[:int(bufferSizeVariable.get())]
+    audio_analyzer.minimum_volume = int(minimumVolumeVariable.get())
 
     checkConfig()
     with open('gamepadconfig.ini', 'w') as configfile:
@@ -410,34 +412,42 @@ def setOptions(keyReceive):
     print("Valores atualizados!")
 
 def mainGui():
-    global btnEdit
+    global btnMap
+    global nameBuffer
+    global nameVolume
+    global nameLeeway
     global entryBuffer
     global entryVolume
     global entryLeeway
-    btnEdit.grid(column = 0, row = 2, columnspan = 2)
-    nameBuffer = Label(window, text="Buffer")
+    btnMap.grid(column = 0, row = 2, columnspan = 2)
     nameBuffer.grid(column = 0, row = 3)
     entryBuffer.grid(column = 1, row = 3)
-    nameVolume = Label(window, text="Volume")
     nameVolume.grid(column=0, row=4)
     entryVolume.grid(column = 1, row = 4)
-    nameLeeway = Label(window, text="Leeway")
     nameLeeway.grid(column=0, row=5)
     entryLeeway.grid(column = 1, row = 5)
     
 
-def editClick():
+def mapClick():
     global maingui
-    global btnEdit
+    global btnMap
     global entryBuffer
     global entryVolume
     global entryLeeway
+    global nameBuffer
+    global nameVolume
+    global nameLeeway
+
     maingui = False
     lbl.configure(text = "Mapeando Botões: ")
-    btnEdit.grid_forget()
+    btnMap.grid_forget()
     entryBuffer.grid_forget()
     entryVolume.grid_forget()
     entryLeeway.grid_forget()
+    nameBuffer.grid_forget()
+    nameVolume.grid_forget()
+    nameLeeway.grid_forget()
+
     t = Thread(target = interfaceMultiOptionTk, args = ("s"), daemon = True)
     t.start()
     
@@ -472,10 +482,13 @@ def guiInterface():
     global lbl
     global endBtn
 
-    global btnEdit
+    global btnMap
     global entryBuffer
     global entryVolume
     global entryLeeway
+    global nameBuffer
+    global nameVolume
+    global nameLeeway
 
     clickButtonThreadRunningCheck = False
     editingThreadRunningCheck = False
@@ -485,8 +498,8 @@ def guiInterface():
 
     #window.geometry(str(column)+"x"+str(row))
 
-    lbl = Label(window, text = "Você quer mapear os botões?")
-    lbl.grid(column = 0, row = 1)
+    lbl = Label(window, text = "   Você quer mapear os botões?   ")
+    lbl.grid(column = 0, row = 1, columnspan = 2)
 
     btnYes = Button(window, text = "Sim", command = yesClick)
     btnYes.grid(column = 0, row = 2)
@@ -496,13 +509,16 @@ def guiInterface():
 
     endBtn = Button(window, text = "Fim da Edição", command = fimDaEdicao)
 
-    btnEdit = Button(window, text = "Mapear Botões", command = editClick)
+    btnMap = Button(window, text = "Mapear Botões", command = mapClick)
     entryBuffer = Entry(window, textvariable = bufferSizeVariable)
     entryBuffer.bind('<Return>', setOptions)
     entryVolume = Entry(window, textvariable = minimumVolumeVariable)
     entryVolume.bind('<Return>', setOptions)
     entryLeeway = Entry(window, textvariable = noteLeewayVariable)
     entryLeeway.bind('<Return>', setOptions)
+    nameBuffer = Label(window, text = "Buffer")
+    nameVolume = Label(window, text = "Volume")
+    nameLeeway = Label(window, text = "Leeway")
 
     window.mainloop()
 
